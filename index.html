@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Safe Demo: form with GET (no network submission)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 1.5rem; max-width: 650px; }
+    label { display:block; margin-top: 0.75rem; }
+    .output { margin-top: 1rem; background:#f6f6f6; padding:0.75rem; border-radius:6px; font-family: monospace; }
+    .warnings { color:#8b0000; font-weight:600; margin-top:0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Safe demo: Name, password, hidden field, method=GET</h1>
+
+  <form id="demoForm" action="/action_page.php" method="GET" target="_blank" action="#">
+    <label>
+      Name:
+      <input name="name" type="text" required />
+    </label>
+
+    <label>
+      Password:
+      <input name="password" type="password" required />
+    </label>
+
+    <!-- hidden field -->
+    <input name="token" type="hidden" value="hidden-value" />
+
+    <p>
+      <button type="submit">Show query (safe)</button>
+      <button type="reset">Reset</button>
+    </p>
+
+    <div class="warning">
+      Demo only — this form will <strong>not</strong> send data over the network.
+      Never use GET to submit real passwords; that is insecure.
+    </div>
+  </form>
+
+  <div id="result" class="output" aria-live="polite">Query string will appear here after submit.</div>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault(); // STOP any network submission — important safety measure
+
+      const form = e.target;
+      const params = new URLSearchParams(new FormData(form));
+
+      // Build a readable query string (what would appear in the address bar if the form were submitted by GET)
+      const queryString = '?' + params.toString();
+
+      // For safety, redact the password when displaying to the user
+      const safeParams = new URLSearchParams(params);
+      if (safeParams.has('password')) safeParams.set('password', '***REDACTED***');
+
+      // Show the actual query string and a redacted version
+      document.getElementById('result').textContent =
+        'Actual query string (network submission blocked): ' + queryString + '\n' +
+        'Redacted version shown to user: ?' + safeParams.toString();
+
+      // Do not send or log the password anywhere.
+      return false;
+    }
+  </script>
+</body>
+</html>
